@@ -1,0 +1,5 @@
+{
+  "model_checkpoint": "tinker://9777df8e-eb3e-524a-9867-47a14d63af46:train:0/weights/final",
+  "base_model": "Qwen/Qwen3-8B",
+  "api_key_env": "TINKER_API_KEY"
+}

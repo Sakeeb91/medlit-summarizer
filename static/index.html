@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedLit Summarizer | AI-Powered Medical Literature Analysis</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink: #1a1d29;
+            --ink-light: #2d3142;
+            --ink-muted: #4a4e69;
+            --paper: #faf9f7;
+            --paper-warm: #f5f3ef;
+            --paper-cream: #ede9e3;
+            --accent: #c9a227;
+            --accent-deep: #a8841f;
+            --accent-glow: #e8c547;
+            --teal: #2a6b6b;
+            --teal-light: #3d8b8b;
+            --error: #9e2a2b;
+            --success: #386641;
+
+            --font-display: 'Cormorant Garamond', Georgia, serif;
+            --font-body: 'IBM Plex Sans', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --shadow-soft: 0 2px 20px rgba(26, 29, 41, 0.08);
+            --shadow-elevated: 0 8px 40px rgba(26, 29, 41, 0.12);
+            --shadow-glow: 0 0 60px rgba(201, 162, 39, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Subtle texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--ink) 0%, var(--ink-light) 100%);
+            padding: 2rem 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(201, 162, 39, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            position: relative;
+        }
+
+        .logo-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-text h1 {
+            font-family: var(--font-display);
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--paper);
+            letter-spacing: 0.02em;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+        }
+
+        .header-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 100px;
+            color: var(--paper-cream);
+            font-size: 0.8rem;
+        }
+
+        .header-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .intro h2 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        .intro p {
+            color: var(--ink-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Workspace */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .panel:hover {
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            background: var(--paper-warm);
+            border-bottom: 1px solid var(--paper-cream);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .panel-title h3 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .panel-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--ink);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panel-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--accent);
+        }
+
+        .panel-meta {
+            font-size: 0.8rem;
+            color: var(--ink-muted);
+            font-family: var(--font-mono);
+        }
+
+        .panel-body {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar */
+        .output-content::-webkit-scrollbar,
+        .input-panel textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .output-content::-webkit-scrollbar-track,
+        .input-panel textarea::-webkit-scrollbar-track {
+            background: var(--paper-cream);
+            border-radius: 4px;
+        }
+
+        .output-content::-webkit-scrollbar-thumb,
+        .input-panel textarea::-webkit-scrollbar-thumb {
+            background: var(--ink-muted);
+            border-radius: 4px;
+        }
+
+        .output-content::-webkit-scrollbar-thumb:hover,
+        .input-panel textarea::-webkit-scrollbar-thumb:hover {
+            background: var(--ink-light);
+        }
+
+        /* Input Panel */
+        .input-panel textarea {
+            flex: 1;
+            min-height: 400px;
+            max-height: 500px;
+            border: 2px solid var(--paper-cream);
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--ink);
+            resize: none;
+            overflow-y: auto;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: var(--paper);
+        }
+
+        .input-panel textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 4px rgba(42, 107, 107, 0.1);
+        }
+
+        .input-panel textarea::placeholder {
+            color: var(--ink-muted);
+            opacity: 0.6;
+        }
+
+        .input-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--paper-cream);
+        }
+
+        .char-count {
+            font-size: 0.8rem;
+            color: var(--ink-muted);
+            font-family: var(--font-mono);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ink) 0%, var(--ink-light) 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(26, 29, 41, 0.25);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary:disabled:hover::before {
+            left: -100%;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Output Panel */
+        .output-panel .panel-body {
+            position: relative;
+        }
+
+        .output-content {
+            flex: 1;
+            min-height: 400px;
+            max-height: 500px;
+            padding: 1.25rem;
+            background: var(--paper);
+            border-radius: 12px;
+            border: 2px solid var(--paper-cream);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .output-placeholder {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink-muted);
+            text-align: center;
+        }
+
+        .output-placeholder svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .output-placeholder p {
+            font-size: 0.95rem;
+        }
+
+        .summary-text {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--ink);
+        }
+
+        .summary-text p {
+            margin-bottom: 1rem;
+        }
+
+        .summary-text strong {
+            color: var(--teal);
+            font-weight: 600;
+        }
+
+        /* Markdown rendered styles */
+        .summary-text h1, .summary-text h2, .summary-text h3, .summary-text h4 {
+            font-family: var(--font-display);
+            color: var(--ink);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+        }
+
+        .summary-text h1 { font-size: 1.5rem; }
+        .summary-text h2 { font-size: 1.3rem; }
+        .summary-text h3 { font-size: 1.15rem; }
+        .summary-text h4 { font-size: 1rem; }
+
+        .summary-text h1:first-child,
+        .summary-text h2:first-child,
+        .summary-text h3:first-child {
+            margin-top: 0;
+        }
+
+        .summary-text ul, .summary-text ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .summary-text li {
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-text li::marker {
+            color: var(--teal);
+        }
+
+        .summary-text em {
+            font-style: italic;
+            color: var(--ink-muted);
+        }
+
+        .summary-text code {
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            background: var(--paper-cream);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .summary-text blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--ink-muted);
+            font-style: italic;
+        }
+
+        .summary-text hr {
+            border: none;
+            border-top: 1px solid var(--paper-cream);
+            margin: 1.5rem 0;
+        }
+
+        /* Loading State */
+        .loading-state {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .dna-loader {
+            width: 60px;
+            height: 80px;
+            position: relative;
+        }
+
+        .dna-strand {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dna-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .dna-strand:nth-child(1) .dna-dot {
+            background: var(--teal);
+            animation: dnaLeft 1.5s ease-in-out infinite;
+        }
+
+        .dna-strand:nth-child(2) .dna-dot {
+            background: var(--accent);
+            animation: dnaRight 1.5s ease-in-out infinite;
+        }
+
+        .dna-strand:nth-child(1) .dna-dot:nth-child(1) { top: 0%; animation-delay: 0s; }
+        .dna-strand:nth-child(1) .dna-dot:nth-child(2) { top: 25%; animation-delay: 0.15s; }
+        .dna-strand:nth-child(1) .dna-dot:nth-child(3) { top: 50%; animation-delay: 0.3s; }
+        .dna-strand:nth-child(1) .dna-dot:nth-child(4) { top: 75%; animation-delay: 0.45s; }
+
+        .dna-strand:nth-child(2) .dna-dot:nth-child(1) { top: 0%; animation-delay: 0s; }
+        .dna-strand:nth-child(2) .dna-dot:nth-child(2) { top: 25%; animation-delay: 0.15s; }
+        .dna-strand:nth-child(2) .dna-dot:nth-child(3) { top: 50%; animation-delay: 0.3s; }
+        .dna-strand:nth-child(2) .dna-dot:nth-child(4) { top: 75%; animation-delay: 0.45s; }
+
+        @keyframes dnaLeft {
+            0%, 100% { transform: translateX(-20px); }
+            50% { transform: translateX(20px); }
+        }
+
+        @keyframes dnaRight {
+            0%, 100% { transform: translateX(20px); }
+            50% { transform: translateX(-20px); }
+        }
+
+        .loading-text {
+            font-size: 0.9rem;
+            color: var(--ink-muted);
+            animation: loadingPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Error State */
+        .error-state {
+            padding: 1rem;
+            background: rgba(158, 42, 43, 0.08);
+            border: 1px solid rgba(158, 42, 43, 0.2);
+            border-radius: 8px;
+            color: var(--error);
+            font-size: 0.9rem;
+        }
+
+        /* Output Actions */
+        .output-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--paper-cream);
+        }
+
+        .output-stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--ink-muted);
+            font-family: var(--font-mono);
+        }
+
+        .btn-secondary {
+            background: var(--paper-warm);
+            color: var(--ink);
+            border: 1px solid var(--paper-cream);
+        }
+
+        .btn-secondary:hover {
+            background: var(--paper-cream);
+            border-color: var(--ink-muted);
+        }
+
+        .copy-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .copy-buttons .btn {
+            padding: 0.625rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--ink-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--teal);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Sample Articles */
+        .samples {
+            margin-top: 3rem;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .samples h4 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .sample-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .sample-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sample-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .sample-card:hover {
+            border-color: var(--teal);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .sample-card h5 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 0.5rem;
+        }
+
+        .sample-card p {
+            font-size: 0.8rem;
+            color: var(--ink-muted);
+            line-height: 1.5;
+        }
+
+        .sample-card .tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: var(--paper-cream);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--ink-muted);
+            margin-top: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--ink);
+            color: white;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-elevated);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--error);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="8" width="40" height="32" rx="4" stroke="#c9a227" stroke-width="2"/>
+                        <path d="M12 16h24M12 24h18M12 32h12" stroke="#faf9f7" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="38" cy="32" r="6" fill="#c9a227"/>
+                        <path d="M36 32l2 2 4-4" stroke="#1a1d29" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>MedLit Summarizer</h1>
+                    <span>AI-Powered Analysis</span>
+                </div>
+            </div>
+            <div class="header-badge">
+                <span>Model Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="intro">
+            <h2>Transform Medical Research into Insights</h2>
+            <p>Paste any medical research article and receive a concise, accurate summary highlighting key findings, methodology, and clinical implications.</p>
+        </div>
+
+        <div class="workspace">
+            <!-- Input Panel -->
+            <div class="panel input-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <div class="panel-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                            </svg>
+                        </div>
+                        <h3>Research Article</h3>
+                    </div>
+                    <span class="panel-meta">Input</span>
+                </div>
+                <div class="panel-body">
+                    <textarea
+                        id="articleInput"
+                        placeholder="Paste your medical research article here...
+
+Example: Background, Methods, Results, and Conclusions from a clinical study, systematic review, or research paper."
+                    ></textarea>
+                    <div class="input-actions">
+                        <span class="char-count"><span id="charCount">0</span> characters</span>
+                        <button class="btn btn-primary" id="summarizeBtn" onclick="summarize()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polygon points="10,8 16,12 10,16 10,8" fill="currentColor"/>
+                            </svg>
+                            Summarize
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="panel output-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <div class="panel-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12l2 2 4-4"/>
+                                <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.12 0 4.07.74 5.62 1.98"/>
+                            </svg>
+                        </div>
+                        <h3>Summary</h3>
+                    </div>
+                    <span class="panel-meta">Output</span>
+                </div>
+                <div class="panel-body">
+                    <div class="output-content" id="outputContent">
+                        <div class="output-placeholder" id="placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 12h6M12 9v6"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                            <p>Your summary will appear here</p>
+                        </div>
+                    </div>
+                    <div class="output-actions" id="outputActions" style="display: none;">
+                        <div class="output-stats">
+                            <span>Input: <strong id="inputLength">0</strong> chars</span>
+                            <span>Output: <strong id="outputLength">0</strong> chars</span>
+                        </div>
+                        <div class="copy-buttons">
+                            <button class="btn btn-secondary" onclick="copyAsText()" title="Copy as plain text">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copy Text
+                            </button>
+                            <button class="btn btn-secondary" onclick="copyAsMarkdown()" title="Copy as Markdown">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14,2 14,8 20,8"/>
+                                    <path d="M9 15l2 2 4-4"/>
+                                </svg>
+                                Copy MD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Articles -->
+        <div class="samples">
+            <h4>Try a Sample Article</h4>
+            <div class="sample-cards">
+                <div class="sample-card" onclick="loadSample('cardio')">
+                    <h5>Cardiovascular Biomarkers</h5>
+                    <p>Study on cardiac troponin T as a predictor of cardiovascular disease risk in community-dwelling adults.</p>
+                    <span class="tag">Cardiology</span>
+                </div>
+                <div class="sample-card" onclick="loadSample('anxiety')">
+                    <h5>Anxiety in Parkinson's</h5>
+                    <p>Research examining the relationship between anxiety and cognitive function in Parkinson's disease patients.</p>
+                    <span class="tag">Neurology</span>
+                </div>
+                <div class="sample-card" onclick="loadSample('diabetes')">
+                    <h5>Type 2 Diabetes Prevention</h5>
+                    <p>Clinical trial evaluating lifestyle intervention programs for preventing type 2 diabetes in high-risk individuals.</p>
+                    <span class="tag">Endocrinology</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Powered by <a href="https://tinker-docs.thinkingmachines.ai/" target="_blank">Tinker API</a> | Fine-tuned on PubMed literature</p>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Store raw markdown for copying
+        let rawMarkdown = '';
+
+        // Simple Markdown parser
+        function parseMarkdown(md) {
+            let html = md;
+
+            // Escape HTML entities first
+            html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Headers (must be at start of line)
+            html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+            // Bold with ** or __
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+            // Italic with * or _
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+            // Inline code
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Blockquotes
+            html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+
+            // Horizontal rule
+            html = html.replace(/^---$/gm, '<hr>');
+            html = html.replace(/^\*\*\*$/gm, '<hr>');
+
+            // Unordered lists
+            html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+            // Ordered lists
+            html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+            // Paragraphs - wrap remaining text blocks
+            const lines = html.split('\n');
+            let result = [];
+            let inParagraph = false;
+            let paragraphContent = [];
+
+            for (let line of lines) {
+                const trimmed = line.trim();
+
+                // Skip if it's already an HTML element
+                if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') ||
+                    trimmed.startsWith('<ol') || trimmed.startsWith('<li') ||
+                    trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr') ||
+                    trimmed === '</ul>' || trimmed === '</ol>') {
+                    if (inParagraph && paragraphContent.length > 0) {
+                        result.push('<p>' + paragraphContent.join(' ') + '</p>');
+                        paragraphContent = [];
+                        inParagraph = false;
+                    }
+                    result.push(line);
+                } else if (trimmed === '') {
+                    if (inParagraph && paragraphContent.length > 0) {
+                        result.push('<p>' + paragraphContent.join(' ') + '</p>');
+                        paragraphContent = [];
+                        inParagraph = false;
+                    }
+                } else {
+                    inParagraph = true;
+                    paragraphContent.push(trimmed);
+                }
+            }
+
+            if (paragraphContent.length > 0) {
+                result.push('<p>' + paragraphContent.join(' ') + '</p>');
+            }
+
+            return result.join('\n');
+        }
+
+        // Sample articles
+        const samples = {
+            cardio: `Background: Cardiovascular disease remains the leading cause of mortality worldwide. Recent studies have suggested that novel biomarkers may improve risk stratification beyond traditional risk factors. This study aimed to evaluate the prognostic value of high-sensitivity cardiac troponin T (hs-cTnT) in a general population cohort.
+
+Methods: We conducted a prospective cohort study of 8,121 participants from the community-based ARIC study (Atherosclerosis Risk in Communities). Participants were free of cardiovascular disease at baseline (1990-1992) and were followed for incident cardiovascular events through 2015. hs-cTnT was measured in stored plasma samples using a high-sensitivity assay. Cox proportional hazards models were used to examine associations with cardiovascular outcomes.
+
+Results: During a median follow-up of 20.6 years, 1,821 participants developed cardiovascular disease, 876 developed heart failure, and 612 experienced coronary heart disease events. After adjustment for traditional risk factors, participants in the highest quartile of hs-cTnT had a 2.3-fold increased risk of cardiovascular disease (HR 2.31, 95% CI 1.98-2.70), a 4.2-fold increased risk of heart failure (HR 4.23, 95% CI 3.31-5.40), and a 1.8-fold increased risk of coronary heart disease (HR 1.82, 95% CI 1.43-2.32) compared with participants in the lowest quartile. Addition of hs-cTnT to traditional risk factors improved discrimination (C-statistic increase: 0.023 for CVD, 0.051 for heart failure) and reclassification metrics.
+
+Conclusions: hs-cTnT measured in community-dwelling adults predicts long-term risk of cardiovascular disease, particularly heart failure, independent of traditional risk factors. These findings support the potential utility of hs-cTnT for cardiovascular risk assessment in primary prevention settings.`,
+
+            anxiety: `Background: Anxiety affects quality of life in those living with Parkinson's disease (PD) more so than overall cognitive status, motor deficits, apathy, and depression. Although anxiety and depression are often related and coexist in PD patients, recent research suggests that anxiety rather than depression is the most prominent and prevalent mood disorder in PD. Yet, our current understanding of anxiety and its impact on cognition in PD remains limited.
+
+Methods: This study examined the relationship between anxiety and cognition in 50 PD patients. Seventeen PD patients with anxiety (PDA+) and thirty-three PD patients without anxiety (PDA-) were included. Anxiety was assessed using the Hospital Anxiety and Depression Scale (HADS). Cognition was assessed using the Trail Making Test (TMT), Digit Span Forward and Backward subtests of the Wechsler Memory Scale-III (WMS-III), and the Controlled Oral Word Association Test (COWAT).
+
+Results: The PDA+ group showed significantly worse performance on TMT-B compared to the PDA- group (p = 0.02). Anxiety severity was significantly correlated with TMT-B performance in the PDA+ group (r = 0.54, p = 0.008). Additionally, the PDA+ group demonstrated impaired performance on measures of working memory and verbal fluency. There were no significant differences between groups in basic attention or processing speed measures.
+
+Conclusions: Anxiety in PD is associated with specific cognitive impairments, particularly in executive function and set-shifting abilities. These findings suggest that anxiety may contribute to cognitive dysfunction in PD through specific frontal-executive pathways. Clinicians should consider screening for and treating anxiety to potentially improve cognitive outcomes in PD patients.`,
+
+            diabetes: `Background: Type 2 diabetes mellitus (T2DM) is a growing global health concern. Lifestyle intervention programs have shown promise in preventing or delaying the onset of T2DM in high-risk individuals. This randomized controlled trial evaluated the effectiveness of an intensive lifestyle intervention program compared to standard care.
+
+Methods: A total of 3,234 participants with prediabetes (impaired fasting glucose or impaired glucose tolerance) were randomly assigned to either an intensive lifestyle intervention (ILI) group or a standard care (SC) group. The ILI group received personalized diet counseling, supervised physical activity sessions (150 minutes/week), and behavioral support for 24 months. The primary outcome was the development of T2DM, diagnosed by oral glucose tolerance test.
+
+Results: After 24 months of follow-up, 9.8% of participants in the ILI group developed T2DM compared to 21.4% in the SC group (relative risk reduction: 54%, 95% CI 42-64%, p < 0.001). The ILI group achieved significantly greater weight loss (mean -6.2 kg vs -1.1 kg, p < 0.001) and improvements in HbA1c levels (-0.3% vs -0.05%, p < 0.001). Subgroup analyses showed consistent benefits across age groups, sex, and baseline BMI categories. The number needed to treat to prevent one case of T2DM was 8.6.
+
+Conclusions: Intensive lifestyle intervention significantly reduces the incidence of T2DM in high-risk individuals. These findings support the implementation of structured lifestyle programs as a primary prevention strategy for T2DM in clinical and community settings.`
+        };
+
+        // Character count
+        const articleInput = document.getElementById('articleInput');
+        const charCount = document.getElementById('charCount');
+
+        articleInput.addEventListener('input', function() {
+            charCount.textContent = this.value.length.toLocaleString();
+        });
+
+        // Load sample
+        function loadSample(type) {
+            articleInput.value = samples[type];
+            charCount.textContent = samples[type].length.toLocaleString();
+            articleInput.scrollTop = 0;
+            showToast('Sample loaded!', 'success');
+        }
+
+        // Summarize
+        async function summarize() {
+            const article = articleInput.value.trim();
+
+            if (!article) {
+                showToast('Please enter an article to summarize', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('summarizeBtn');
+            const outputContent = document.getElementById('outputContent');
+            const outputActions = document.getElementById('outputActions');
+
+            // Show loading
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+                    <circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20"/>
+                </svg>
+                Processing...
+            `;
+
+            outputContent.innerHTML = `
+                <div class="loading-state">
+                    <div class="dna-loader">
+                        <div class="dna-strand">
+                            <div class="dna-dot"></div>
+                            <div class="dna-dot"></div>
+                            <div class="dna-dot"></div>
+                            <div class="dna-dot"></div>
+                        </div>
+                        <div class="dna-strand">
+                            <div class="dna-dot"></div>
+                            <div class="dna-dot"></div>
+                            <div class="dna-dot"></div>
+                            <div class="dna-dot"></div>
+                        </div>
+                    </div>
+                    <p class="loading-text">Analyzing medical literature...</p>
+                </div>
+            `;
+            outputActions.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ article })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store raw markdown for copying
+                    rawMarkdown = data.summary;
+
+                    // Parse markdown to HTML for pretty display
+                    const formattedSummary = parseMarkdown(data.summary);
+
+                    outputContent.innerHTML = `<div class="summary-text">${formattedSummary}</div>`;
+
+                    // Update stats
+                    document.getElementById('inputLength').textContent = data.article_length.toLocaleString();
+                    document.getElementById('outputLength').textContent = data.summary_length.toLocaleString();
+                    outputActions.style.display = 'flex';
+
+                    showToast('Summary generated!', 'success');
+                } else {
+                    outputContent.innerHTML = `<div class="error-state">${data.error || 'An error occurred'}</div>`;
+                    showToast('Error generating summary', 'error');
+                }
+            } catch (error) {
+                outputContent.innerHTML = `<div class="error-state">Connection error. Please ensure the server is running.</div>`;
+                showToast('Connection error', 'error');
+            }
+
+            // Reset button
+            btn.disabled = false;
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polygon points="10,8 16,12 10,16 10,8" fill="currentColor"/>
+                </svg>
+                Summarize
+            `;
+        }
+
+        // Copy as plain text
+        function copyAsText() {
+            const summaryText = document.querySelector('.summary-text');
+            if (summaryText) {
+                navigator.clipboard.writeText(summaryText.innerText)
+                    .then(() => showToast('Copied as plain text!', 'success'))
+                    .catch(() => showToast('Failed to copy', 'error'));
+            }
+        }
+
+        // Copy as Markdown
+        function copyAsMarkdown() {
+            if (rawMarkdown) {
+                navigator.clipboard.writeText(rawMarkdown)
+                    .then(() => showToast('Copied as Markdown!', 'success'))
+                    .catch(() => showToast('Failed to copy', 'error'));
+            }
+        }
+
+        // Toast notification
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        // Keyboard shortcut
+        articleInput.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                summarize();
+            }
+        });
+    </script>
+
+    <style>
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>

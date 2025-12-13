@@ -1,0 +1,7 @@
+tinker
+datasets
+transformers
+torch
+tqdm
+pandas
+openai
